@@ -1,4 +1,30 @@
-function filtered_signal = test_filter(sample,raw_grid,filtered_grid,longer_filtered_grid,V_t)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      This MATLAB function implements the generalized time-adaptive       %
+%  filter derived by Yufang Hao and Achim Kempf.                           %                                                                                                               
+%      The filter takes in a raw signal as amplitudes recorded on a dense  % 
+%  sampling grid. It also takes the information of the new sampling grid   %    
+%  that the user wants to filter the signal down to. The output is the     %
+%  filtered signal given by amplitudes on the new sampling grid.           %                                                                                                                           
+%                                                                          %
+%      The function takes five input arguments. Here is the introduction   %                                                                                                                                     
+%      1.sample: This is the raw signal before filtering. The vector       %
+%  constains all the amplitudes on the dense grid                          %
+%      2.raw_grid: This is the old dense sampling grid called {t_n}        % 
+%      3.filtered_grid: This is the new sampling grid that the             %
+%  user wants to filter the signal down to. This grid is called {t_r}.     %
+%      4.longer_filtered_grid: This is actually the same grid as           %
+%  the filtered_grid, but with 500 extra points on both ends.              %
+%  When we are evaluate the value of the sine series, we need to add up    %
+%  1000 terms centered at a particular t value. However, we cannot find    %
+%  all the 1000 terms that center at the beginning and the end of the      %
+%  vector. Therefore, we needs these extra points when the center is at    %
+%  the beginning and the end of the vector.                                %
+%      5.V_t: This vector contains the bandwidth information at each       %
+%  point on the dense grid. According to the formula, we have to multiply  %
+%  each sample amplitude (those on the dense grid) with the two times the  %
+%  bandwidth at that point.                                                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function filtered_signal = time_adaptive_filter(sample,raw_grid,filtered_grid,longer_filtered_grid,V_t)
     raw_grid = round(raw_grid,5);                                                  
     %Get rid of errors due to the double-precision
     filtered_grid = round(filtered_grid,5);
@@ -8,26 +34,29 @@ function filtered_signal = test_filter(sample,raw_grid,filtered_grid,longer_filt
     %Find the t' values of the new grid
     sq = zeros(1,length(raw_grid));                                               
     %Preallocation of sq vector. sq vector stores the value of the sine series. 
-    f = longer_filtered_grid(501:end-500);                                        
-    %f is just the new grid.
-    f = round(f,5);                                                 
-    %Get rid of errors due to the double-precision
     for ii = 1:length(raw_grid)                                                    
        %For each t_r in the dense sampling grid, evaluate the sine series with respect to t_r
        t_r = raw_grid(ii);                                                                
        sq(ii) = sum_square(t_r,longer_filtered_grid,longer_filtered_tp);           
        %The sum_square function evaluates the value of the sine series
     end
+    %The sign of a sample point in {t_r} grid is determined by the number of points in {t_r} grid that lie between the 
+    %t_r point being calculated and t_n point being read. The t_n points that lie between the same two t_r points will
+    %give the same signs for the t_r point being calculated. Therefore, dividing {t_n} into groups makes the sign calculation
+    %faster.
     group = zeros(1,length(filtered_grid)+1);
     group(1) = length(raw_grid(raw_grid < f(1)));
     group(end) = length(raw_grid);
+    %The vector "group" holds the information of starting and ending indeices of each {t_n} group
     for ii = 2:length(group)-1
         group(ii) = group(ii-1)+length(raw_grid(raw_grid < f(ii) & raw_grid > f(ii-1)));
     end
+    %Then, create a vector that holds the signs for {t_n}. 
     sign = ones(1,length(raw_grid));
     for ii = 1:2:length(group)-1
         sign(group(ii)+1:group(ii+1)) = sign(group(ii)+1:group(ii+1)) * (-1);
     end
+    %Initialize the sign vector
     for a = 1:length(filtered_grid);                                               
         %For every t in the new grid, find out its amplitude             
         new_t = filtered_grid(a);                                                  
@@ -39,8 +68,10 @@ function filtered_signal = test_filter(sample,raw_grid,filtered_grid,longer_filt
         sign = (-1)*(sign);
         if a == 1
             sign(1:group(a)) = sign(1:group(a))*(-1);
+            %Calculate the sign vector in terms of the first t_r
         else
             sign(group(a-1)+1:group(a)) = sign(group(a-1)+1:group(a))*(-1);
+            %The signs do not need to be repeatedly calculated. We just need to flip them.
         end
         %-1 to the power of z gives the sign   
         b = b.*sign;   
