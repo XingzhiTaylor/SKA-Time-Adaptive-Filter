@@ -18,7 +18,7 @@
 %  all the 1000 terms that center at the beginning and the end of the      %
 %  vector. Therefore, we needs these extra points when the center is at    %
 %  the beginning and the end of the vector.                                %
-%      4.filtered_grid: This is the new sampling grid that the user wants  %
+%      4.grid_points: This is the new sampling grid that the user wants    %
 %  to reconstruct the signal up to.                                        %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function recons = time_adaptive_reconstruction(sample,sample_grid,longer_sample_grid,grid_points)
@@ -34,10 +34,6 @@ function recons = time_adaptive_reconstruction(sample,sample_grid,longer_sample_
     %% Reconstruction Part
     for a = 1:grid_len;                                                   
         %For every t in the new grid, find out its amplitude
-        if mod(a,10000) == 0
-            fprintf('%d Reconstruction\n', a);                                 
-            %Print out the value of a, indicating which point we are working on. This statement is completely optional.
-        end
         t = grid_points(a);                                                
         %Pick a t from the new grid
         k = G(t,sample_grid,longer_sample_grid,longer_tp);                 
