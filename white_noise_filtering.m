@@ -1,4 +1,4 @@
-%There should be two sampling grids: 
+%There should be two row vectors prepared before running this script: 
 %     1.The dense sampling grid "raw_grid"
 %     2.The bandwidth vector "bw" that stores the bandwidth value for all the
 %     points in raw_grid. The bandwidth vector should have the same length
