@@ -3,8 +3,9 @@ filtered_grid = zeros(1,length(raw_grid));
 %to the signal since the real length of the sparse sampling grid is unknown. 
 %Redundant 0 will be discarded at last.
 ii = raw_grid(1);
+jj = 1;
 while ii <= raw_grid(end)
-    filtered_grid(fix(ii)) = ii;
+    filtered_grid(jj) = ii;
     %Store the value of the sampling point
     interp_bw = interp1(raw_grid,bw,ii);
     %Using the built-in linear interpolation function to calculate
@@ -21,6 +22,7 @@ while ii <= raw_grid(end)
     %rounded to an integer. The automatic rounding will cause large error.
     %So if an automatic rounding is detected, add 0.01 to change the
     %variable type to a floating point number.
+    jj = jj + 1;
 end
 filtered_grid = filtered_grid(filtered_grid~=0);
 %Discard all 0 values
