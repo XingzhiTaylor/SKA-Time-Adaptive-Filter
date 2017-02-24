@@ -28,6 +28,7 @@ function filtered_signal = time_adaptive_filter(sample,raw_grid,filtered_grid,lo
     raw_grid = round(raw_grid,5);                                                  
     %Get rid of errors due to the double-precision
     filtered_grid = round(filtered_grid,5);
+    spacing = raw_grid(2) - raw_grid(1);
     filtered_signal = zeros(1, length(filtered_grid));                             
     %Preallocation
     longer_filtered_tp = t_prime(longer_filtered_grid);
@@ -64,7 +65,7 @@ function filtered_signal = time_adaptive_filter(sample,raw_grid,filtered_grid,lo
         new_tp = longer_filtered_tp(a+500);                                        
         %Pick the corresponding t' value of variable new_t 
         new_t = round(new_t,5);
-        b = sqrt(new_tp).*sq./abs(new_t-raw_grid).*V_t;
+        b = sqrt(new_tp).*sq./abs(new_t-raw_grid).*V_t*spacing;
         sign = (-1)*(sign);
         if a == 1
             sign(1:group(a)) = sign(1:group(a))*(-1);
