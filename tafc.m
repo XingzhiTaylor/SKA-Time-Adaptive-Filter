@@ -13,9 +13,11 @@ function filtered_signal = tafc(raw_signal,raw_grid,bw)
     %Preallocation. The length of the sparse grid is originally set to be equal
     %to the signal since the real length of the sparse sampling grid is unknown. 
     %Redundant 0 will be discarded at last.
+    spacing = raw_grid(2) - raw_grid(1);
     ii = raw_grid(1);
+    jj = 1;
     while ii <= raw_grid(end)
-        filtered_grid(fix(ii)) = ii;
+        filtered_grid(jj) = ii;
         %Store the value of the sampling point
         interp_bw = interp1(raw_grid,bw,ii);
         %Using the built-in linear interpolation function to calculate
@@ -32,6 +34,7 @@ function filtered_signal = tafc(raw_signal,raw_grid,bw)
         %rounded to an integer. The automatic rounding will cause large error.
         %So if an automatic rounding is detected, add 0.01 to change the
         %variable type to a floating point number.
+        jj = jj + 1;
     end
     filtered_grid = filtered_grid(filtered_grid~=0);
     %Discard all 0 values
@@ -85,7 +88,7 @@ function filtered_signal = tafc(raw_signal,raw_grid,bw)
         new_tp = longer_filtered_tp(a+500);                                        
         %Pick the corresponding t' value of variable new_t 
         new_t = round(new_t,5);
-        b = sqrt(new_tp).*sq./abs(new_t-raw_grid).*V_t;
+        b = sqrt(new_tp).*sq./abs(new_t-raw_grid).*V_t*spacing;
         sign = (-1)*(sign);
         if a == 1
             sign(1:group(a)) = sign(1:group(a))*(-1);
